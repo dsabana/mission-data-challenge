@@ -59,6 +59,43 @@ func (s *Storage) RetrieveAllJournals(ctx context.Context) (*[]Journal, error) {
 	return &journalList, nil
 }
 
+// SaveEntry stores new Entry in DB for a given Journal ID.
+func (s *Storage) SaveEntry(ctx context.Context, journalID string, entry Entry) (*Entry, error) {
+	var newEntry Entry
+	err := s.DB.QueryRowxContext(ctx, insertEntryQuery,
+		journalID,
+		entry.Content,
+	).StructScan(&newEntry)
+	if err != nil {
+		fmt.Println("error saving entry in DB")
+		return nil, err
+	}
+
+	return &newEntry, nil
+}
+
+// RetrieveAllEntries gets all entries from the DB from a given JournalID
+func (s *Storage) RetrieveAllEntries(ctx context.Context, journalID string) (*[]Entry, error) {
+	rows, err := s.DB.QueryxContext(ctx,
+		retrieveAllEntriesQuery,
+		journalID,
+	)
+	if err != nil {
+		fmt.Println("error retrieving journals from db")
+		return nil, err
+	}
+	defer rows.Close()
+
+	entryList := make([]Entry, 0)
+	j := Entry{}
+	for rows.Next() {
+		rows.StructScan(&j)
+		entryList = append(entryList, j)
+	}
+
+	return &entryList, nil
+}
+
 // Constants used to create a Postgres connection.
 const (
 	DatasourceNameFormat = "host=%s port=%d dbname=%s user=%s password=%s search_path=%s sslmode=%s"

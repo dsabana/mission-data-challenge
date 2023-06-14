@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -31,6 +32,46 @@ func addJournal(s Service) http.HandlerFunc {
 func getJournals(s Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		list, err := s.GetAllJournals(r.Context())
+		if err != nil {
+			generateErrorResponse(w, http.StatusInternalServerError, fmt.Errorf("error retrieving object"))
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		if err = json.NewEncoder(w).Encode(list); err != nil {
+			generateErrorResponse(w, http.StatusInternalServerError, fmt.Errorf("error encoding response"))
+			return
+		}
+	}
+}
+
+func addEntry(s Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var journalID = mux.Vars(r)["journalID"]
+		var newEntry Entry
+		if err := json.NewDecoder(r.Body).Decode(&newEntry); err != nil {
+			generateErrorResponse(w, http.StatusBadRequest, fmt.Errorf("error parsing request"))
+			return
+		}
+
+		resp, err := s.AddEntry(r.Context(), journalID, newEntry)
+		if err != nil {
+			generateErrorResponse(w, http.StatusInternalServerError, fmt.Errorf("error saving journal"))
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		if err = json.NewEncoder(w).Encode(resp); err != nil {
+			generateErrorResponse(w, http.StatusInternalServerError, fmt.Errorf("error encoding response"))
+			return
+		}
+	}
+}
+
+func getEntries(s Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var journalID = mux.Vars(r)["journalID"]
+		list, err := s.GetAllEntries(r.Context(), journalID)
 		if err != nil {
 			generateErrorResponse(w, http.StatusInternalServerError, fmt.Errorf("error retrieving object"))
 			return

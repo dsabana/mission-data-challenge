@@ -7,3 +7,9 @@ var retrieveAllJournalsQuery string
 
 //go:embed queries/insert-journal-query.sql
 var insertJournalQuery string
+
+//go:embed queries/retrieve-all-entries-query.sql
+var retrieveAllEntriesQuery string
+
+//go:embed queries/insert-entry-query.sql
+var insertEntryQuery string
