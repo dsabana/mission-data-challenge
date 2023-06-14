@@ -1,9 +1,9 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-
 	_ "github.com/lib/pq"
 )
 
@@ -22,6 +22,41 @@ func NewStorage() (*Storage, error) {
 	return &Storage{
 		DB: db,
 	}, nil
+}
+
+// SaveJournal stores new journal in DB.
+func (s *Storage) SaveJournal(ctx context.Context, j Journal) (*Journal, error) {
+	var newJournal Journal
+	err := s.DB.QueryRowxContext(ctx, insertJournalQuery,
+		j.Name,
+	).StructScan(&newJournal)
+	if err != nil {
+		fmt.Println("error saving journal in DB")
+		return nil, err
+	}
+
+	return &newJournal, nil
+}
+
+// RetrieveAllJournals gets all journals from the DB
+func (s *Storage) RetrieveAllJournals(ctx context.Context) (*[]Journal, error) {
+	rows, err := s.DB.QueryxContext(ctx,
+		retrieveAllJournalsQuery,
+	)
+	if err != nil {
+		fmt.Println("error retrieving journals from db")
+		return nil, err
+	}
+	defer rows.Close()
+
+	journalList := make([]Journal, 0)
+	j := Journal{}
+	for rows.Next() {
+		rows.StructScan(&j)
+		journalList = append(journalList, j)
+	}
+
+	return &journalList, nil
 }
 
 // Constants used to create a Postgres connection.
