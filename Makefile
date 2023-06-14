@@ -20,6 +20,14 @@ migrate-up:
 .PHONY: local-db
 local-db: pg migrate-up
 
+.PHONY: test
+test:
+	go test ./...
+
+.PHONY: build
+build:
+	go build -o bin/mission-data-challenge ./cmd/main.go
+
 .PHONY: run
 run:
 	go run cmd/main.go

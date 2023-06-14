@@ -3,19 +3,21 @@ package main
 import (
 	"fmt"
 	"log"
-	"mission-data-challenge/internal"
+	http2 "mission-data-challenge/internal/http"
+	"mission-data-challenge/internal/service"
+	"mission-data-challenge/internal/storage"
 	"net/http"
 )
 
 func main() {
-	storage, err := internal.NewStorage()
+	storage, err := storage.NewStorage()
 	if err != nil {
 		panic(err)
 	}
 
-	service := internal.NewService(storage)
+	service := service.NewService(storage)
 
-	router := internal.SetupRouter(service)
+	router := http2.SetupRouter(service)
 
 	fmt.Printf("Serving transactions on port 8000\n")
 	log.Fatal(http.ListenAndServe(":8000", router))

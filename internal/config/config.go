@@ -1,4 +1,4 @@
-package internal
+package config
 
 type Configuration struct {
 	PGDatabase string

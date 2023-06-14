@@ -6,7 +6,7 @@ package internal_test
 
 import (
 	context "context"
-	internal "mission-data-challenge/internal"
+	internal "mission-data-challenge/internal/service"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,6 +35,21 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// RetrieveAllEntries mocks base method.
+func (m *MockRepository) RetrieveAllEntries(ctx context.Context, journalID string) (*[]internal.Entry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RetrieveAllEntries", ctx, journalID)
+	ret0, _ := ret[0].(*[]internal.Entry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RetrieveAllEntries indicates an expected call of RetrieveAllEntries.
+func (mr *MockRepositoryMockRecorder) RetrieveAllEntries(ctx, journalID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveAllEntries", reflect.TypeOf((*MockRepository)(nil).RetrieveAllEntries), ctx, journalID)
+}
+
 // RetrieveAllJournals mocks base method.
 func (m *MockRepository) RetrieveAllJournals(ctx context.Context) (*[]internal.Journal, error) {
 	m.ctrl.T.Helper()
@@ -48,6 +63,21 @@ func (m *MockRepository) RetrieveAllJournals(ctx context.Context) (*[]internal.J
 func (mr *MockRepositoryMockRecorder) RetrieveAllJournals(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveAllJournals", reflect.TypeOf((*MockRepository)(nil).RetrieveAllJournals), ctx)
+}
+
+// SaveEntry mocks base method.
+func (m *MockRepository) SaveEntry(ctx context.Context, journalID string, entry internal.Entry) (*internal.Entry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveEntry", ctx, journalID, entry)
+	ret0, _ := ret[0].(*internal.Entry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SaveEntry indicates an expected call of SaveEntry.
+func (mr *MockRepositoryMockRecorder) SaveEntry(ctx, journalID, entry interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveEntry", reflect.TypeOf((*MockRepository)(nil).SaveEntry), ctx, journalID, entry)
 }
 
 // SaveJournal mocks base method.
@@ -88,6 +118,21 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
+// AddEntry mocks base method.
+func (m *MockService) AddEntry(ctx context.Context, journalID string, entry internal.Entry) (*internal.Entry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddEntry", ctx, journalID, entry)
+	ret0, _ := ret[0].(*internal.Entry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddEntry indicates an expected call of AddEntry.
+func (mr *MockServiceMockRecorder) AddEntry(ctx, journalID, entry interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEntry", reflect.TypeOf((*MockService)(nil).AddEntry), ctx, journalID, entry)
+}
+
 // AddJournal mocks base method.
 func (m *MockService) AddJournal(ctx context.Context, journal internal.Journal) (*internal.Journal, error) {
 	m.ctrl.T.Helper()
@@ -101,6 +146,21 @@ func (m *MockService) AddJournal(ctx context.Context, journal internal.Journal) 
 func (mr *MockServiceMockRecorder) AddJournal(ctx, journal interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddJournal", reflect.TypeOf((*MockService)(nil).AddJournal), ctx, journal)
+}
+
+// GetAllEntries mocks base method.
+func (m *MockService) GetAllEntries(ctx context.Context, journalID string) (*[]internal.Entry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllEntries", ctx, journalID)
+	ret0, _ := ret[0].(*[]internal.Entry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllEntries indicates an expected call of GetAllEntries.
+func (mr *MockServiceMockRecorder) GetAllEntries(ctx, journalID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllEntries", reflect.TypeOf((*MockService)(nil).GetAllEntries), ctx, journalID)
 }
 
 // GetAllJournals mocks base method.

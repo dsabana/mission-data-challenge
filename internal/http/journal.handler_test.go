@@ -1,4 +1,4 @@
-package internal_test
+package http_test
 
 import (
 	"bytes"
@@ -7,8 +7,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-	"mission-data-challenge/internal"
-	internal_test "mission-data-challenge/internal/mocks"
+	http2 "mission-data-challenge/internal/http"
+	"mission-data-challenge/internal/service"
+	"mission-data-challenge/internal/service/mocks"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,9 +21,9 @@ func beforeTests(t *testing.T) (*mux.Router, *internal_test.MockRepository) {
 	mCtrl := gomock.NewController(t)
 	mr := internal_test.NewMockRepository(mCtrl)
 
-	s := internal.NewService(mr)
+	s := service.NewService(mr)
 
-	r := internal.SetupRouter(s)
+	r := http2.SetupRouter(s)
 
 	return r, mr
 }
@@ -30,7 +31,7 @@ func beforeTests(t *testing.T) (*mux.Router, *internal_test.MockRepository) {
 func TestCompaniesHandler_AddCompany(t *testing.T) {
 	handler, mr := beforeTests(t)
 	mockId := "someID"
-	newJournalMock := internal.Journal{
+	newJournalMock := service.Journal{
 		Name: "test journal",
 		Id:   &mockId,
 	}
@@ -43,7 +44,7 @@ func TestCompaniesHandler_AddCompany(t *testing.T) {
 
 	t.Run("successfully creates journal", func(t *testing.T) {
 		// given
-		var mockReq = internal.Journal{
+		var mockReq = service.Journal{
 			Name: "test journal",
 		}
 
@@ -59,7 +60,7 @@ func TestCompaniesHandler_AddCompany(t *testing.T) {
 		handler.ServeHTTP(w, r)
 
 		// then
-		var response internal.Journal
+		var response service.Journal
 		assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
 
 		assert.Equal(t, http.StatusCreated, w.Code)
@@ -68,7 +69,7 @@ func TestCompaniesHandler_AddCompany(t *testing.T) {
 
 	t.Run("returns 500 while creates journal", func(t *testing.T) {
 		// given
-		var mockReq = internal.Journal{
+		var mockReq = service.Journal{
 			Name: "test journal",
 		}
 

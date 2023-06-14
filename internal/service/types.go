@@ -1,4 +1,4 @@
-package internal
+package service
 
 type Journal struct {
 	Id   *string `json:"id,omitempty" db:"id"`

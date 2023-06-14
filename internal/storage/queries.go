@@ -1,4 +1,4 @@
-package internal
+package storage
 
 import _ "embed" // _ embed is a special package used to embed queries from sql files.
 

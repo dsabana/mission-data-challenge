@@ -1,15 +1,16 @@
-package internal
+package http
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"mission-data-challenge/internal/service"
 	"net/http"
 )
 
-func addJournal(s Service) http.HandlerFunc {
+func addJournal(s service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var newJournal Journal
+		var newJournal service.Journal
 		if err := json.NewDecoder(r.Body).Decode(&newJournal); err != nil {
 			generateErrorResponse(w, http.StatusBadRequest, fmt.Errorf("error parsing request"))
 			return
@@ -29,7 +30,7 @@ func addJournal(s Service) http.HandlerFunc {
 	}
 }
 
-func getJournals(s Service) http.HandlerFunc {
+func getJournals(s service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		list, err := s.GetAllJournals(r.Context())
 		if err != nil {
@@ -45,10 +46,10 @@ func getJournals(s Service) http.HandlerFunc {
 	}
 }
 
-func addEntry(s Service) http.HandlerFunc {
+func addEntry(s service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var journalID = mux.Vars(r)["journalID"]
-		var newEntry Entry
+		var newEntry service.Entry
 		if err := json.NewDecoder(r.Body).Decode(&newEntry); err != nil {
 			generateErrorResponse(w, http.StatusBadRequest, fmt.Errorf("error parsing request"))
 			return
@@ -68,7 +69,7 @@ func addEntry(s Service) http.HandlerFunc {
 	}
 }
 
-func getEntries(s Service) http.HandlerFunc {
+func getEntries(s service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var journalID = mux.Vars(r)["journalID"]
 		list, err := s.GetAllEntries(r.Context(), journalID)

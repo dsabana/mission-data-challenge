@@ -1,9 +1,11 @@
-package internal
+package service
 
 //go:generate go install github.com/golang/mock/mockgen@v1.6.0
 //go:generate mockgen -source ./service.go -package internal_test -destination ./mocks/mocks.go Repository
 
-import "context"
+import (
+	"context"
+)
 
 type Repository interface {
 	SaveJournal(ctx context.Context, journal Journal) (*Journal, error)

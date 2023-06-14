@@ -1,10 +1,12 @@
-package internal
+package storage
 
 import (
 	"context"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"mission-data-challenge/internal/config"
+	"mission-data-challenge/internal/service"
 )
 
 // Storage is a struct that contains the sqlx.DB
@@ -14,7 +16,7 @@ type Storage struct {
 
 // NewStorage generates a new Storage struct with functioning sqlx.DB.
 func NewStorage() (*Storage, error) {
-	db, err := newSQLXFromEnv(Config)
+	db, err := newSQLXFromEnv(config.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -25,8 +27,8 @@ func NewStorage() (*Storage, error) {
 }
 
 // SaveJournal stores new journal in DB.
-func (s *Storage) SaveJournal(ctx context.Context, j Journal) (*Journal, error) {
-	var newJournal Journal
+func (s *Storage) SaveJournal(ctx context.Context, j service.Journal) (*service.Journal, error) {
+	var newJournal service.Journal
 	err := s.DB.QueryRowxContext(ctx, insertJournalQuery,
 		j.Name,
 	).StructScan(&newJournal)
@@ -39,7 +41,7 @@ func (s *Storage) SaveJournal(ctx context.Context, j Journal) (*Journal, error) 
 }
 
 // RetrieveAllJournals gets all journals from the DB
-func (s *Storage) RetrieveAllJournals(ctx context.Context) (*[]Journal, error) {
+func (s *Storage) RetrieveAllJournals(ctx context.Context) (*[]service.Journal, error) {
 	rows, err := s.DB.QueryxContext(ctx,
 		retrieveAllJournalsQuery,
 	)
@@ -49,8 +51,8 @@ func (s *Storage) RetrieveAllJournals(ctx context.Context) (*[]Journal, error) {
 	}
 	defer rows.Close()
 
-	journalList := make([]Journal, 0)
-	j := Journal{}
+	journalList := make([]service.Journal, 0)
+	j := service.Journal{}
 	for rows.Next() {
 		rows.StructScan(&j)
 		journalList = append(journalList, j)
@@ -60,8 +62,8 @@ func (s *Storage) RetrieveAllJournals(ctx context.Context) (*[]Journal, error) {
 }
 
 // SaveEntry stores new Entry in DB for a given Journal ID.
-func (s *Storage) SaveEntry(ctx context.Context, journalID string, entry Entry) (*Entry, error) {
-	var newEntry Entry
+func (s *Storage) SaveEntry(ctx context.Context, journalID string, entry service.Entry) (*service.Entry, error) {
+	var newEntry service.Entry
 	err := s.DB.QueryRowxContext(ctx, insertEntryQuery,
 		journalID,
 		entry.Content,
@@ -75,7 +77,7 @@ func (s *Storage) SaveEntry(ctx context.Context, journalID string, entry Entry) 
 }
 
 // RetrieveAllEntries gets all entries from the DB from a given JournalID
-func (s *Storage) RetrieveAllEntries(ctx context.Context, journalID string) (*[]Entry, error) {
+func (s *Storage) RetrieveAllEntries(ctx context.Context, journalID string) (*[]service.Entry, error) {
 	rows, err := s.DB.QueryxContext(ctx,
 		retrieveAllEntriesQuery,
 		journalID,
@@ -86,8 +88,8 @@ func (s *Storage) RetrieveAllEntries(ctx context.Context, journalID string) (*[]
 	}
 	defer rows.Close()
 
-	entryList := make([]Entry, 0)
-	j := Entry{}
+	entryList := make([]service.Entry, 0)
+	j := service.Entry{}
 	for rows.Next() {
 		rows.StructScan(&j)
 		entryList = append(entryList, j)
@@ -102,7 +104,7 @@ const (
 	PQDriver             = "postgres"
 )
 
-func newSQLXFromEnv(cfg Configuration) (*sqlx.DB, error) {
+func newSQLXFromEnv(cfg config.Configuration) (*sqlx.DB, error) {
 	db, err := sqlx.Open(PQDriver, fmt.Sprintf(DatasourceNameFormat, cfg.PGHost, cfg.PGPort, cfg.PGDatabase, cfg.PGUser, cfg.PGPassword, cfg.PGSchema, cfg.PGSSLMode))
 	if err != nil {
 		fmt.Println("couldn't open a db connection")

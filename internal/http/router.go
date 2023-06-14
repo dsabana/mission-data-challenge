@@ -1,11 +1,12 @@
-package internal
+package http
 
 import (
 	"github.com/gorilla/mux"
+	"mission-data-challenge/internal/service"
 	"net/http"
 )
 
-func SetupRouter(s Service) *mux.Router {
+func SetupRouter(s service.Service) *mux.Router {
 	router := mux.NewRouter()
 
 	registerHandlers(router, s)
@@ -13,7 +14,7 @@ func SetupRouter(s Service) *mux.Router {
 	return router
 }
 
-func registerHandlers(r *mux.Router, s Service) {
+func registerHandlers(r *mux.Router, s service.Service) {
 	r.StrictSlash(true)
 	r.Use(commonMiddleware)
 
