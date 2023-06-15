@@ -7,9 +7,9 @@ This challenge is running in a simulated environment and is using a simple one f
 The current state of the code is a very simplistic version of a single endpoint. In order to make it a production API, there is a lot that has to be done. I tried to add as much as I could within the provided time. There is many more improvements that could be done. Here are the improvements that I have added:
 
 ## Changes Made By me:
-Changed the project structure: Even on small projects, using a domain driven architecture will improve the project. Having separation of concerns between each layer is helps isolating the functionality in the project. I have separated the http/rest layer in it's own package. In the future, we could add support for SOAP or gRPC. The rest of the layers could potentially be unaffected with this separation. With that same idea, the services and storage have their own packages. In the case of storage, we currently have database support for Postgresql and we could easily add support for other databases or in-memory storage.
-Added tests for the getJournals endpoint. Having a domain driven architecture also helps with testing. Since we are dealing with layers, we can focus on one layer at a time and mock the layers our component directly interacts with.
-Added a service layer independent from the rest layer and the storage layer to deal with service logic. (here is where sorting happens after retrieving the data, for example)
+- Changed the project structure: Even on small projects, using a domain driven architecture will improve the project. Having separation of concerns between each layer is helps isolating the functionality in the project. I have separated the http/rest layer in it's own package. In the future, we could add support for SOAP or gRPC. The rest of the layers could potentially be unaffected with this separation. With that same idea, the services and storage have their own packages. In the case of storage, we currently have database support for Postgresql and we could easily add support for other databases or in-memory storage.
+- Added tests for the getJournals endpoint. Having a domain driven architecture also helps with testing. Since we are dealing with layers, we can focus on one layer at a time and mock the layers our component directly interacts with.
+- Added a service layer independent from the rest layer and the storage layer to deal with service logic. (here is where sorting happens after retrieving the data, for example)
 
 ### Improvements needed to become production ready
 - Docker support: Build images of the project to later store in an image repository.
@@ -22,9 +22,41 @@ Added a service layer independent from the rest layer and the storage layer to d
 ## How to run
 This project was built using the Golang programing language. If you are running it locally, please make sure that you have Go installed in your machine before trying to run this application.
 
-In order to run the code locally, after checking out the project run:
+### Spining up a Database
+Having a database is required for the application to run. Using Docker we can make this happen by running the following  d
+make` command
+
+```bash
+$ make local-db
+```
+
+This command will spin up a PosgreSQL instance, and will migrate the data and create the needed table(s).
+
+```bash
+$ make local-db
+docker ps -a -q --filter "name=mission-data-db" | grep -q . && docker rm -f mission-data-db || echo Awesome!! No DB present.
+mission-data-db
+docker run -d --name mission-data-db -p 5432:5432 -e POSTGRES_USER=mission_data -e POSTGRES_PASSWORD=secret postgres:14.1-alpine
+fcb16c83141c39d04b7d542c0dcbef184fbce1a2918aa4345246bba4dee60f1f
+sleep 5
+docker exec -it mission-data-db psql -Umission_data -a mission_data -c 'CREATE SCHEMA IF NOT EXISTS journal;'
+CREATE SCHEMA IF NOT EXISTS journal;
+CREATE SCHEMA
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+migrate -path db/migrations -database "postgresql://mission_data:secret@localhost:5432/mission_data?sslmode=disable&search_path=journal" -verbose up
+2023/06/15 10:05:10 Start buffering 1/u initial_tables
+2023/06/15 10:05:10 Read and execute 1/u initial_tables
+2023/06/15 10:05:10 Finished 1/u initial_tables (read 3.06726ms, ran 18.289712ms)
+2023/06/15 10:05:10 Finished after 22.031513ms
+2023/06/15 10:05:10 Closing source and database
+```
+
+### Run Application
+In order to run the code locally, after checking out the project and having a Postgres instance, run the `make run` command:
 ```bash
 $ make run
+go run cmd/main.go
+Serving transactions on port 8000
 ```
 
 To build the executable, you can run the following command:
@@ -44,9 +76,14 @@ $ ./bin/mission-data-challenge
 ### Create New Journal
 To create a new journal entry you can  use:
 ```bash
-$ curl -X POST http://localhost:8000/journals -H 'Content-Type: application/json' -d '{"name": "test journal"}'
+$ curl -X POST http://localhost:8000/journals \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "test journal"}'
 
-{"id":"90e61a6a-b299-4c78-97c2-0e997ee8365a","name":"test journal"}
+{
+  "id":"90e61a6a-b299-4c78-97c2-0e997ee8365a",
+  "name":"test journal"
+}
 ```
 
 ### Get All Journals
@@ -68,15 +105,19 @@ Note: The `json_pp` at the end will format the resulting response in a more read
 ### Create New Entry
 Once we have Journals saved, we can add entries.
 ```bash
-$ curl -X POST http://localhost:8000/journals/90e61a6a-b299-4c78-97c2-0e997ee8365a/entries -H 'Content-Type: application/json' -d '{"content": "test content"}'
+$ curl -X POST http://localhost:8000/journals/90e61a6a-b299-4c78-97c2-0e997ee8365a/entries \
+  -H 'Content-Type: application/json' \
+  -d '{"content": "test content"}'
 
-{"id":"73b37eab-b5b2-4ca9-a7b6-1f0cd6d4f2cd", "journal_id":"90e61a6a-b299-4c78-97c2-0e997ee8365a","content":"test content"}
+{
+  "id":"73b37eab-b5b2-4ca9-a7b6-1f0cd6d4f2cd", 
+  "journal_id":"90e61a6a-b299-4c78-97c2-0e997ee8365a",
+  "content":"test content"
+}
 ```
 
 ### Get All Entries
-We can get all the entries from any specific journal
-### Get All Journals
-Once the app is running. We can poll it from a different terminal using curl:
+We can get all the entries from any specific journal:
 ```bash
 $ curl http://localhost:8000/journals/90e61a6a-b299-4c78-97c2-0e997ee8365a/entries | json_pp
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -91,6 +132,9 @@ $ curl http://localhost:8000/journals/90e61a6a-b299-4c78-97c2-0e997ee8365a/entri
 ]
 ```
 
+### Notes:
+- Due to the time limit, the PUT and DELETE endpoints remain pending for a future iteration. 
+- Also, sample unit tests have been added in the `http` layer but note that more unit tests, integration tests and e2e tests are needed.
 
 ## How to run tests
 This application has tests for the couple of use cases. There are tests for the happy paths and also for failure an edge cases.
